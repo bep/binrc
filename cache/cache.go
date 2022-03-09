@@ -32,15 +32,17 @@ const (
 // aliases is a map of known project aliases
 // to make finding project more easy.
 var aliases = map[string]string{
-	"hugo": "gohugoio/hugo",
-	"gutenberg": "keats/gutenberg",
-	"zola":      "getzola/zola",
+	"hugo":               "gohugoio/hugo",
+	"gutenberg":          "keats/gutenberg",
+	"zola":               "getzola/zola",
+	"dart_sass_embedded": "sass/dart-sass-embedded",
 }
 
 type template struct {
-	Range   string
-	Tarball string
-	Bin     string
+	Range        string
+	Tarball      string
+	Bin          string
+	CleanVersion bool
 }
 
 type templates map[string][]template
@@ -73,8 +75,20 @@ type Project struct {
 
 // URL returns the URL to download the tarball from.
 func (p *Project) URL() string {
-	tarballName := fmt.Sprintf(p.template.Tarball, p.Name, p.cleanVersion)
-	return fmt.Sprintf(tarballTemplate, p.FullName, p.Version, tarballName)
+	var tarballName string
+	// All have version in the template, most have name.
+	if strings.Count(p.template.Tarball, "%s") == 1 {
+		tarballName = fmt.Sprintf(p.template.Tarball, p.cleanVersion)
+	} else {
+		tarballName = fmt.Sprintf(p.template.Tarball, p.Name, p.cleanVersion)
+	}
+
+	version := p.Version
+	if p.template.CleanVersion {
+		version = p.cleanVersion
+	}
+
+	return fmt.Sprintf(tarballTemplate, p.FullName, version, tarballName)
 }
 
 // BinaryName returns the name of the binary to look for
@@ -118,6 +132,7 @@ func (c *Cache) newProject(name, versionString string) (*Project, error) {
 
 	var t *template
 	projectTemplates, ok := c.templates[nwo[1]]
+
 	if ok {
 		for _, tmpl := range projectTemplates {
 			constraint, err := version.NewConstraint(tmpl.Range)
