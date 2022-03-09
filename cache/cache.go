@@ -32,9 +32,10 @@ const (
 // aliases is a map of known project aliases
 // to make finding project more easy.
 var aliases = map[string]string{
-	"hugo": "gohugoio/hugo",
-	"gutenberg": "keats/gutenberg",
-	"zola":      "getzola/zola",
+	"hugo":                "gohugoio/hugo",
+	"gutenberg":           "keats/gutenberg",
+	"zola":                "getzola/zola",
+	"dart_sass_embedded ": "sass/dart-sass-embedded",
 }
 
 type template struct {
